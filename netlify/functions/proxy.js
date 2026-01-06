@@ -1,6 +1,17 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: ''
+    };
+  }
   const targetUrl = event.queryStringParameters.url;
   if (!targetUrl) {
     return {
