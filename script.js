@@ -835,7 +835,6 @@ function updateChartData(response) {
   if (window.myChart && typeof window.myChart.destroy === 'function') {
     window.myChart.destroy();
   }
-
   if (response.error) {
     showToast(response.error, "error");
     return;
@@ -844,51 +843,53 @@ function updateChartData(response) {
   const chartData = response.chartData;
   const categories = response.categories;
   const totalAmount = chartData.reduce((sum, item) => sum + item.amount, 0);
-  const backgroundColors = [
-  '#FF6B6B', // Đỏ san hô
-  '#FF8E53', // Cam cháy
-  '#FFC107', // Vàng hổ phách
-  '#4CAF50', // Xanh lá cây
-  '#40C4FF', // Xanh dương nhạt
-  '#3F51B5', // Xanh indigo
-  '#AB47BC', // Tím đậm
-  '#EC407A', // Hồng phấn
-  '#EF5350', // Đỏ tươi
-  '#FF7043', // Cam đào
-  '#FDD835', // Vàng nắng
-  '#66BB6A', // Xanh lá nhạt
-  '#29B6F6', // Xanh lam
-  '#5C6BC0', // Xanh tím
-  '#D81B60', // Hồng đậm
-  '#F06292', // Hồng đào
-  '#26A69A', // Xanh ngọc
-  '#FFA726', // Cam sáng
-  '#E91E63', // Hồng ruby
-  '#7CB342', // Xanh olive
-  '#0288D1', // Xanh sapphire
-  '#8E24AA', // Tím hoàng gia
-  '#FFCA28', // Vàng kim
-  '#FF5252', // Đỏ cherry
-  '#FFB300', // Vàng cam
-  '#689F38', // Xanh rừng
-  '#039BE5', // Xanh biển
-  '#9575CD', // Tím nhạt
-  '#F48FB1', // Hồng pastel
-  '#FFAB91', // Cam san hô
-  '#4DD0E1', // Xanh cyan
-  '#D4E157', // Vàng chanh
-  '#EF9A9A', // Đỏ pastel
-  '#80DEEA', // Xanh nhạt
-  '#CE93D8', // Tím pastel
-];
 
+  // Mảng màu giữ nguyên
+  const backgroundColors = [
+    '#FF6B6B', // Đỏ san hô
+    '#FF8E53', // Cam cháy
+    '#FFC107', // Vàng hổ phách
+    '#4CAF50', // Xanh lá cây
+    '#40C4FF', // Xanh dương nhạt
+    '#3F51B5', // Xanh indigo
+    '#AB47BC', // Tím đậm
+    '#EC407A', // Hồng phấn
+    '#EF5350', // Đỏ tươi
+    '#FF7043', // Cam đào
+    '#FDD835', // Vàng nắng
+    '#66BB6A', // Xanh lá nhạt
+    '#29B6F6', // Xanh lam
+    '#5C6BC0', // Xanh tím
+    '#D81B60', // Hồng đậm
+    '#F06292', // Hồng đào
+    '#26A69A', // Xanh ngọc
+    '#FFA726', // Cam sáng
+    '#E91E63', // Hồng ruby
+    '#7CB342', // Xanh olive
+    '#0288D1', // Xanh sapphire
+    '#8E24AA', // Tím hoàng gia
+    '#FFCA28', // Vàng kim
+    '#FF5252', // Đỏ cherry
+    '#FFB300', // Vàng cam
+    '#689F38', // Xanh rừng
+    '#039BE5', // Xanh biển
+    '#9575CD', // Tím nhạt
+    '#F48FB1', // Hồng pastel
+    '#FFAB91', // Cam san hô
+    '#4DD0E1', // Xanh cyan
+    '#D4E157', // Vàng chanh
+    '#EF9A9A', // Đỏ pastel
+    '#80DEEA', // Xanh nhạt
+    '#CE93D8', // Tím pastel
+  ];
+
+  // === PHẦN CUSTOM LEGEND (giữ nguyên hoàn toàn) ===
   const customLegend = document.getElementById('customLegend');
   customLegend.innerHTML = '';
   const leftColumn = document.createElement('div');
   leftColumn.className = 'custom-legend-column';
   const rightColumn = document.createElement('div');
   rightColumn.className = 'custom-legend-column';
-
   chartData.forEach((item, i) => {
     const index = categories.indexOf(item.category);
     const color = backgroundColors[index % backgroundColors.length];
@@ -905,12 +906,15 @@ function updateChartData(response) {
     if (i % 2 === 0) leftColumn.appendChild(legendItem);
     else rightColumn.appendChild(legendItem);
   });
-
   customLegend.appendChild(leftColumn);
   customLegend.appendChild(rightColumn);
 
+  // === ĐỊNH DẠNG GIÁ TRỊ TỔNG Ở GIỮA - LUÔN ĐẦY ĐỦ ===
+  let centerText = totalAmount.toLocaleString('vi-VN') + 'đ';
+
+  // === TẠO BIỂU ĐỒ DOUGHNUT ===
   window.myChart = new Chart(ctx, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
       labels: chartData.map(item => item.category),
       datasets: [{
@@ -918,18 +922,28 @@ function updateChartData(response) {
         backgroundColor: chartData.map(item => {
           const index = categories.indexOf(item.category);
           return backgroundColors[index % backgroundColors.length];
-        })
+        }),
+        borderWidth: 2,
+        borderColor: '#fff'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
       aspectRatio: 1,
+      cutout: '60%',  // Lỗ giữa vừa phải, text nằm đẹp
       plugins: {
         legend: { display: false },
         tooltip: {
-          mode: 'index',
-          intersect: false,
+          enabled: true,
+          mode: 'nearest',
+          intersect: true,
+          position: 'nearest',
+          caretPadding: 20,
+          padding: 12,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          titleFont: { size: 13 },
+          bodyFont: { size: 12 },
           callbacks: {
             label: function(tooltipItem) {
               const category = tooltipItem.label;
@@ -937,14 +951,7 @@ function updateChartData(response) {
               const percentage = ((amount / totalAmount) * 100).toFixed(1);
               return `${category}: ${amount.toLocaleString('vi-VN')}đ (${percentage}%)`;
             }
-          },
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleFont: { size: 12 },
-          bodyFont: { size: 10 },
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          padding: 8,
-          displayColors: true,
+          }
         },
         datalabels: {
           formatter: (value, context) => {
@@ -958,7 +965,33 @@ function updateChartData(response) {
           clamp: true
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'centerTotalText',
+      afterDatasetsDraw(chart) {  // ← Hook này đảm bảo text vẽ trước tooltip → tooltip luôn ở trên
+        const { ctx } = chart;
+        ctx.save();
+
+        const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#333';
+
+        const centerX = chart.width / 2;
+        const centerY = chart.height / 2;
+
+        // "Tổng" nhỏ, đẩy lên
+        ctx.font = 'bold 18px Inter, sans-serif';  // ← Cỡ chữ nhỏ hơn
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = textColor;
+        ctx.fillText('Tổng', centerX, centerY - 35);
+
+        // Giá trị tổng - cỡ chữ nhỏ hơn một chút
+        ctx.font = 'bold 26px Inter, sans-serif';  // ← Giảm size để gọn gàng
+        ctx.fillStyle = textColor;
+        ctx.fillText(centerText, centerX, centerY + 10);
+
+        ctx.restore();
+      }
+    }]
   });
 }
 
